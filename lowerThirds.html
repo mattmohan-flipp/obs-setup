@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+  <head>
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Open+Sans:400,300);
+      html {
+        background: none;
+        color: white;
+        font-family: Open Sans;
+        line-height: 1;
+        overflow: hidden;
+        vertical-align: middle;
+        text-shadow: 0px 0px 2px #000000;
+      }
+      body {
+        background: none;
+        height: 720px;
+        overflow: hidden;
+        width: 1280px;
+        position: relative;
+      }
+      main {
+        position: absolute;
+        bottom: 20px;
+        right: 60px;
+        display: flex;
+      }
+      .logo img {
+        height: 4.5rem;
+      }
+      .logo {
+        transform: rotate(0);
+        transition: transform 2s ease-in-out;
+      }
+      .logo.spinning {
+        transform: rotate(180deg);
+      }
+      .title {
+        color: white;
+        font-size: 2rem;
+      }
+      .name {
+        color: #216cc0;
+        font-size: 2rem;
+        font-weight: 800;
+      }
+      .divider {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: #216cc0;
+      }
+      #canvas-confetti {
+        width: 1280px;
+        height: 720px;
+      }
+      #credits {
+        display: flex;
+
+        justify-content: center;
+        text-align: center;
+        letter-spacing: 6px;
+        color: yellow;
+        font-size: 70px;
+
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 1280px;
+        height: 720px;
+      }
+      #credits > div {
+        display: none;
+      }
+      #credits > div.crawl {
+        display: block;
+      }
+      #credits h1.title {
+        font-size: 1.5em;
+      }
+      #credits .h2 {
+        text-align: left;
+      }
+      .crawl {
+        position: relative;
+        top: 720px;
+        width: 100%;
+        animation: crawl 20s linear;
+      }
+      @keyframes crawl {
+        0% {
+          top: 100vh;
+        }
+        100% {
+          top: -3000px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <span class="logo"><img src="assets/Flipp_Logo.png" /></span>
+      <span class="divider"> | </span>
+      <span>
+        <div class="title">Matt Mohan</div>
+        <div class="name">Hosted 2</div>
+      </span>
+    </main>
+    <aside>
+      <div id="credits">
+        <div class="">
+          <h1 class="title">The&nbsp;Meeting</h1>
+          <h2>Cast</h2>
+          Matthew&nbsp;A.&nbsp;Mohan as Sr.&nbsp;Software&nbsp;Developer
+
+          <h2>Directed&nbsp;by</h2>
+          Matt&nbsp;Mohan
+
+          <h2>Cast&nbsp;Supervisor</h2>
+          Matt&nbsp;Mohan
+
+          <h2>Story&nbsp;by</h2>
+          Matthew&nbsp;Mohan
+
+          <h2>Teleplay&nbsp;by</h2>
+          Matthew&nbsp;Mohan
+
+          <h2>Written&nbsp;by</h2>
+          Matthew&nbsp;Mohan
+
+          <h2>Camera&nbsp;Operator&nbsp;'A'</h2>
+          M.&nbsp;"Madman"&nbsp;Mohan
+
+          <h2>Matthew&nbsp;Mohan Produced&nbsp;By</h2>
+          Diane&nbsp;Mohan<br />
+          Peter&nbsp;Mohan
+        </div>
+      </div>
+    </aside>
+    <canvas id="canvas-confetti"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
+    <script type="module">
+      const sock = new WebSocket("ws://127.0.0.1:4321");
+      const cvs = document.getElementById("canvas-confetti");
+      const cfty = confetti.create(cvs, { useWorker: true, resize: true });
+
+      const logo = document.querySelector(".logo");
+      const credits = document.getElementById("credits");
+
+      sock.onmessage = (evt) => {
+        console.info("Got message: ", evt);
+        try {
+          const msg = JSON.parse(evt.data);
+          if (!("type" in msg)) {
+            return;
+          }
+          console.log(`Got command: ${msg.type}: ${msg}`);
+
+          switch (msg.type) {
+            case "confetti":
+              cfty({ origin: { x: 0, y: 1 }, angle: 65, drift: 1 });
+              setTimeout(
+                () => cfty({ origin: { x: 1, y: 1 }, angle: 115, drift: -1 }),
+                150
+              );
+              setTimeout(
+                () =>
+                  cfty({
+                    origin: { x: 0.5, y: 1 },
+                    particleCount: 100,
+                    startVelocity: 60,
+                    spread: 60,
+                    ticks: 300,
+                  }),
+                300
+              );
+              break;
+            case "flipp":
+              logo.classList.toggle("spinning");
+              break;
+            case "credits":
+              credits.querySelector("div").classList.toggle("crawl");
+              break;
+          }
+        } catch {
+          return;
+        }
+      };
+
+      logo.addEventListener("transitionend", () => {
+        logo.classList.remove("spinning");
+      });
+    </script>
+  </body>
+</html>
